@@ -4,7 +4,7 @@ require 'pry'
 
 class Search
 
-  attr_accessor :character, :films_arr
+  attr_accessor :character, :films_arr, :character_hash
   attr_reader :films
 
   def initialize(character)
@@ -12,21 +12,26 @@ class Search
     @films_arr = get_character_movies_from_api
   end
 
-  def films(films_arr)
-    films_arr.each do |url|
+  def films
+    
+    list = Array.new
+    @films_arr.each do |url|
       info = RestClient.get(url)
       film_hash = JSON.parse(info)
-      puts "#{films_hash.index(url)+1} #{film_hash["title"]}"
+      list << film_hash["title"]
     end
+
+    list.each{|el| puts "#{list.index(el)+1} #{el}"}
+
   end
 
   private
 
   def get_character_movies_from_api
-    character_hash = get_info
+    character_arr = get_info
     film_list = Array.new
 
-    character_hash.each do |char|
+    character_arr.each do |char|
       if @character == char["name"].downcase
         char["films"].each{|url| film_list << url}
       end
@@ -39,8 +44,8 @@ class Search
     all = Array.new
     while num < 10
       all_characters = RestClient.get("http://www.swapi.co/api/people/?page=#{num}")
-      character_arr = JSON.parse(all_characters)
-      all.concat(character_hash["results"])
+      @character_hash = JSON.parse(all_characters)
+      all.concat(@character_hash["results"])
       num += 1
     end
     all
